@@ -1,9 +1,10 @@
 import { PluginSettings } from "../settings/pluginSettings";
-import { DataEntry } from "./parseInput";
+import { ChartConfig, DataEntry } from "./parseInput";
 
 export function generateBarChart(
 	data: DataEntry[],
-	settings: PluginSettings
+	settings: PluginSettings,
+	config: ChartConfig = {}
 ): string {
 	let chartLength: number = settings.chartLength;
 	let fillChar: string = settings.fillChar;
@@ -13,14 +14,18 @@ export function generateBarChart(
 	let prefixChar: string = settings.prefixChar;
 	let suffixChar: string = settings.suffixChar;
 
-	const maxValue: number = Math.max(...data.map((entry) => entry.value));
-	const maxValueLength: number = maxValue.toString().length;
+	const dataMax: number = Math.max(...data.map((entry) => entry.value));
+	const maxValue: number = config.max !== undefined ? config.max : dataMax;
+	const minValue: number = config.min !== undefined ? config.min : 0;
+	const range: number = maxValue - minValue;
+	const maxValueLength: number = dataMax.toString().length;
 	const maxKeyLength: number = Math.max(
 		...data.map((entry) => entry.key.length)
 	);
 	const barChart: string[] = [];
 	for (const { key, value } of data) {
-		const barLength: number = Math.floor((value / maxValue) * chartLength);
+		const clampedValue: number = Math.max(minValue, Math.min(maxValue, value));
+		const barLength: number = range > 0 ? Math.floor(((clampedValue - minValue) / range) * chartLength) : 0;
 		const bars: string =
 			fillChar.repeat(barLength) +
 			emptyChar.repeat(chartLength - barLength);

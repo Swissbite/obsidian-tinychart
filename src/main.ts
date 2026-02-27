@@ -1,7 +1,7 @@
 import { App, Editor, MarkdownView, Modal, Notice, Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, PluginSettings } from "./settings/pluginSettings";
 import SettingsTab from "./settings/settingsTab";
-import { parseInput } from "./charts/parseInput";
+import { parseInput, parseConfig } from "./charts/parseInput";
 import { generateBarChart } from "./charts/horizontalBar";
 
 interface DataEntry {
@@ -35,10 +35,12 @@ export default class TinyChartPlugin extends Plugin {
 			"tinychart",
 			(source: string, el: HTMLElement) => {
 				try {
-					const parsedData: DataEntry[] = parseInput(source);
+					const parsedData = parseInput(source);
+					const chartConfig = parseConfig(source);
 					const barChart: string = generateBarChart(
 						parsedData,
-						this.settings
+						this.settings,
+						chartConfig
 					);
 					// Set the blocktype depending on the setting
 					let codeBlockFlag: boolean = this.settings.codeBlock;
